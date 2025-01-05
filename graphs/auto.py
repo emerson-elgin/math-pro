@@ -1,9 +1,11 @@
 import os
 import subprocess
-from datetime import datetime
+from datetime import datetime, timedelta
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
+from tkcalendar import Calendar
+import random
 
 
 def make_commit(date, commit_message):
@@ -31,48 +33,52 @@ def make_commit(date, commit_message):
         messagebox.showerror("Error", f"An error occurred: {e}")
 
 
+def random_time():
+    """Generate a random time in HH:MM:SS format."""
+    hour = random.randint(0, 23)
+    minute = random.randint(0, 59)
+    second = random.randint(0, 59)
+    return f"{hour:02}:{minute:02}:{second:02}"
+
+
 def commit_with_gui():
     def submit_commit():
-        # Get the date, time, and message from the input fields
-        date = f"{date_entry.get()} {time_entry.get()}"
-        commit_message = message_entry.get()
+        # Get the selected date
+        date = calendar.get_date()
 
-        # Validate the date and time format
-        try:
-            datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
-        except ValueError:
-            messagebox.showerror("Error", "Invalid date format. Use YYYY-MM-DD HH:MM:SS")
-            return
+        # Generate random time
+        time = random_time()
+
+        # Combine date and time
+        datetime_str = f"{date} {time}"
+
+        # Get the commit message
+        commit_message = message_entry.get()
 
         if not commit_message:
             messagebox.showerror("Error", "Commit message cannot be empty")
             return
 
         # Call the make_commit function
-        make_commit(date, commit_message)
+        make_commit(datetime_str, commit_message)
 
     # Create the main Tkinter window
     root = tk.Tk()
     root.title("Git Commit GUI")
 
-    # Date input
-    tk.Label(root, text="Date (YYYY-MM-DD):").grid(row=0, column=0, padx=10, pady=5, sticky="w")
-    date_entry = ttk.Entry(root)
-    date_entry.grid(row=0, column=1, padx=10, pady=5)
-
-    # Time input
-    tk.Label(root, text="Time (HH:MM:SS):").grid(row=1, column=0, padx=10, pady=5, sticky="w")
-    time_entry = ttk.Entry(root)
-    time_entry.grid(row=1, column=1, padx=10, pady=5)
+    # Date selection with calendar
+    tk.Label(root, text="Select Date:").grid(row=0, column=0, padx=10, pady=5, sticky="w")
+    calendar = Calendar(root, date_pattern="yyyy-mm-dd")
+    calendar.grid(row=0, column=1, padx=10, pady=5)
 
     # Commit message input
-    tk.Label(root, text="Commit Message:").grid(row=2, column=0, padx=10, pady=5, sticky="w")
+    tk.Label(root, text="Commit Message:").grid(row=1, column=0, padx=10, pady=5, sticky="w")
     message_entry = ttk.Entry(root, width=40)
-    message_entry.grid(row=2, column=1, padx=10, pady=5)
+    message_entry.grid(row=1, column=1, padx=10, pady=5)
 
     # Submit button
     submit_button = ttk.Button(root, text="Commit", command=submit_commit)
-    submit_button.grid(row=3, column=0, columnspan=2, pady=10)
+    submit_button.grid(row=2, column=0, columnspan=2, pady=10)
 
     # Start the Tkinter event loop
     root.mainloop()
